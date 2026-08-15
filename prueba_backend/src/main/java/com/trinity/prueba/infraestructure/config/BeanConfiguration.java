@@ -1,6 +1,8 @@
 package com.trinity.prueba.infraestructure.config;
 
+import com.trinity.prueba.application.service.AccountService;
 import com.trinity.prueba.application.service.ClientService;
+import com.trinity.prueba.domain.port.in.AccountServicePort;
 import com.trinity.prueba.domain.port.in.ClientServicePort;
 import com.trinity.prueba.domain.port.out.AccountRepositoryPort;
 import com.trinity.prueba.domain.port.out.ClientRepositoryPort;
@@ -14,5 +16,11 @@ public class BeanConfiguration {
     public ClientServicePort clientServicePort(ClientRepositoryPort clientRepositoryPort,
                                                AccountRepositoryPort accountRepositoryPort) {
         return new ClientService(clientRepositoryPort, accountRepositoryPort);
+    }
+
+    @Bean
+    public AccountServicePort accountServicePort(AccountRepositoryPort accountRepositoryPort,
+                                                 ClientRepositoryPort clientRepositoryPort) {
+        return new AccountService(accountRepositoryPort, clientRepositoryPort);
     }
 }
