@@ -6,6 +6,7 @@ import com.trinity.prueba.domain.model.exception.InsufficientBalanceException;
 import com.trinity.prueba.domain.model.exception.InvalidAccountStateException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 public class Account {
@@ -74,6 +75,28 @@ public class Account {
         }
         this.balance = newBalance;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Calcula la tasa del GMF (4x1000 = 0.4%) sobre el monto especificado.
+     * Retorna 0 si la cuenta es exenta de GMF (gmfExempt == true).
+     */
+    public BigDecimal calculateGmf(BigDecimal amount) {
+        if (this.gmfExempt || amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return amount.multiply(new BigDecimal("0.004")).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Debita el monto especificado más el recargo de GMF (4x1000) correspondiente.
+     * @return El valor del GMF calculado y debitado.
+     */
+    public BigDecimal debitWithGmf(BigDecimal amount) {
+        BigDecimal gmf = calculateGmf(amount);
+        BigDecimal totalDebit = amount.add(gmf);
+        debit(totalDebit);
+        return gmf;
     }
 
     /**

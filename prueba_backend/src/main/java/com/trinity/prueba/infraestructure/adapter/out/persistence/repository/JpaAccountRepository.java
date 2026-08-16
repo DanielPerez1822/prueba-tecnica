@@ -17,4 +17,6 @@ public interface JpaAccountRepository extends JpaRepository<AccountEntity, Long>
     boolean existsByClientId(Long clientId);
 
     boolean existsByAccountNumber(String accountNumber);
+
+    boolean existsByClientIdAndGmfExemptTrue(Long clientId);
 }

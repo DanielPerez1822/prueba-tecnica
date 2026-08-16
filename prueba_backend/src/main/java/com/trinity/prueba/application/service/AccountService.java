@@ -36,6 +36,12 @@ public class AccountService implements AccountServicePort {
             .orElseThrow(() -> new ClientNotFoundException(
                 "Cliente no encontrado con ID: " + account.getClientId()));
 
+        // Validar exención única de GMF por cliente
+        if (account.isGmfExempt() && accountRepository.existsByClientIdAndGmfExemptTrue(account.getClientId())) {
+            throw new com.trinity.prueba.domain.model.exception.InvalidAccountStateException(
+                "El cliente ya posee una cuenta exenta de GMF (4x1000).");
+        }
+
         // RN-P05 + RN-P06: Generar número de cuenta único de 10 dígitos
         String accountNumber;
         do {
