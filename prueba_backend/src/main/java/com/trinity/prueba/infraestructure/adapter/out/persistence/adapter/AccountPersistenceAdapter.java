@@ -68,4 +68,9 @@ public class AccountPersistenceAdapter implements AccountRepositoryPort {
     public boolean existsByAccountNumber(String accountNumber) {
         return jpaAccountRepository.existsByAccountNumber(accountNumber);
     }
+
+    @Override
+    public boolean existsByClientIdAndGmfExemptTrue(Long clientId) {
+        return jpaAccountRepository.existsByClientIdAndGmfExemptTrue(clientId);
+    }
 }

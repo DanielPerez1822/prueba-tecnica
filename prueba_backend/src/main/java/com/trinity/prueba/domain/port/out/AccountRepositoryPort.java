@@ -20,4 +20,6 @@ public interface AccountRepositoryPort {
     boolean existsByClientId(Long clientId);
 
     boolean existsByAccountNumber(String accountNumber);
+
+    boolean existsByClientIdAndGmfExemptTrue(Long clientId);
 }
