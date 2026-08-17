@@ -1,0 +1,19 @@
+<div class="app-layout">
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon">🏦</span>
+        <span class="brand-title">Entidad Financiera</span>
+      </div>
+      <nav class="nav-menu">
+        <a routerLink="/clients" routerLinkActive="active" class="nav-link">Clientes</a>
+        <a routerLink="/accounts" routerLinkActive="active" class="nav-link">Productos</a>
+        <a routerLink="/transactions" routerLinkActive="active" class="nav-link">Transacciones</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
