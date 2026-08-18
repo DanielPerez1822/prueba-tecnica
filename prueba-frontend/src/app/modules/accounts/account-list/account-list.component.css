@@ -392,6 +392,18 @@
   transition: all 0.15s ease;
 }
 
+.statement-action {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.statement-action:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
 .status-inactivate {
   background-color: #fef3c7;
   color: #d97706;

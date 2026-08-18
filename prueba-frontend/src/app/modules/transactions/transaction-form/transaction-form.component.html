@@ -1,0 +1,184 @@
+<div class="form-container">
+  <!-- Header del Formulario -->
+  <div class="form-header">
+    <div class="header-navigation">
+      <a routerLink="/transactions" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al extracto / transacciones
+      </a>
+    </div>
+    <h1 class="form-title">Ejecutar Transacción Financiera</h1>
+    <p class="form-subtitle">Realice consignaciones, retiros de efectivo o transferencias electrónicas entre cuentas</p>
+  </div>
+
+  <!-- Alerta de Error -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Alerta de Cuentas Iguales en Transferencia -->
+  <div *ngIf="transactionForm.errors?.['sameAccount'] && (f['sourceAccountId'].touched || f['targetAccountId'].touched)" class="alert alert-warning">
+    <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+    <span>No es posible transferir a la misma cuenta de origen. Por favor seleccione una cuenta destino diferente.</span>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card form-card">
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="reactive-form">
+      <div class="form-grid">
+        
+        <!-- Tipo de Transacción -->
+        <div class="form-group full-width">
+          <label for="transactionType" class="form-label">
+            Tipo de Operación Financiera <span class="required">*</span>
+          </label>
+          <div class="type-selector">
+            <label *ngFor="let type of transactionTypes" class="type-radio-label" [class.selected]="currentType === type.code">
+              <input
+                type="radio"
+                formControlName="transactionType"
+                [value]="type.code"
+                class="type-radio"
+              />
+              <span class="type-title">{{ type.label }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Cuenta Origen (Para Retiros y Transferencias) -->
+        <div *ngIf="currentType === 'WITHDRAWAL' || currentType === 'TRANSFER'" class="form-group">
+          <label for="sourceAccountId" class="form-label">
+            Cuenta Origen <span class="required">*</span>
+          </label>
+          <select
+            id="sourceAccountId"
+            formControlName="sourceAccountId"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('sourceAccountId')"
+            [disabled]="isLoadingAccounts"
+          >
+            <option [ngValue]="null">-- Seleccione Cuenta Origen --</option>
+            <option *ngFor="let acc of accounts" [value]="acc.id">
+              {{ getAccountLabel(acc) }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('sourceAccountId')" class="error-feedback">
+            <span>Debe seleccionar una cuenta de origen.</span>
+          </div>
+        </div>
+
+        <!-- Cuenta Destino (Para Consignaciones y Transferencias) -->
+        <div *ngIf="currentType === 'DEPOSIT' || currentType === 'TRANSFER'" class="form-group">
+          <label for="targetAccountId" class="form-label">
+            Cuenta Destino <span class="required">*</span>
+          </label>
+          <select
+            id="targetAccountId"
+            formControlName="targetAccountId"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('targetAccountId')"
+            [disabled]="isLoadingAccounts"
+          >
+            <option [ngValue]="null">-- Seleccione Cuenta Destino --</option>
+            <option *ngFor="let acc of accounts" [value]="acc.id">
+              {{ getAccountLabel(acc) }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('targetAccountId')" class="error-feedback">
+            <span>Debe seleccionar una cuenta de destino.</span>
+          </div>
+        </div>
+
+        <!-- Monto de la Transacción -->
+        <div class="form-group">
+          <label for="amount" class="form-label">
+            Monto a Operar ($) <span class="required">*</span>
+          </label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">$</span>
+            <input
+              id="amount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              formControlName="amount"
+              placeholder="0.00"
+              class="form-control amount-input"
+              [class.is-invalid]="isFieldInvalid('amount')"
+            />
+          </div>
+          <div *ngIf="isFieldInvalid('amount')" class="error-feedback">
+            <span *ngIf="f['amount'].errors?.['required']">El monto es obligatorio.</span>
+            <span *ngIf="f['amount'].errors?.['min']">El monto a operar debe ser mayor a $0.00.</span>
+          </div>
+        </div>
+
+        <!-- Descripción / Observaciones -->
+        <div class="form-group full-width">
+          <label for="description" class="form-label">
+            Descripción / Motivo (Opcional)
+          </label>
+          <input
+            id="description"
+            type="text"
+            formControlName="description"
+            placeholder="Ej. Depósito inicial, pago de factura, transferencia entre productos..."
+            class="form-control"
+          />
+        </div>
+
+      </div>
+
+      <!-- Panel Informativo según Tipo -->
+      <div class="operation-info-banner mt-3">
+        <div *ngIf="currentType === 'DEPOSIT'" class="info-content">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 8 12 12 16 14"></polyline>
+          </svg>
+          <span>Consignación: Se acreditará el monto directamente a la cuenta destino seleccionada.</span>
+        </div>
+        <div *ngIf="currentType === 'WITHDRAWAL'" class="info-content">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+          </svg>
+          <span>Retiro: Se debitará el monto de la cuenta origen (las cuentas de ahorro no pueden tener saldo negativo).</span>
+        </div>
+        <div *ngIf="currentType === 'TRANSFER'" class="info-content">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+          <span>Transferencia: Se debitará de la cuenta origen y se acreditará en la cuenta destino en una operación atómica.</span>
+        </div>
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div class="form-actions">
+        <a routerLink="/transactions" class="btn btn-secondary">
+          Cancelar
+        </a>
+        <button type="submit" [disabled]="isSubmitting || transactionForm.invalid" class="btn btn-primary">
+          <span *ngIf="isSubmitting" class="mini-spinner"></span>
+          {{ isSubmitting ? 'Procesando...' : 'Ejecutar Transacción' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
