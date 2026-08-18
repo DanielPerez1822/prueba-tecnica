@@ -6,7 +6,8 @@
       <p class="module-subtitle">Administración del ciclo de vida de clientes de la entidad financiera</p>
     </div>
     <a routerLink="/clients/new" class="btn btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
@@ -17,7 +18,8 @@
   <!-- Alertas de notificación -->
   <div *ngIf="errorMessage" class="alert alert-danger">
     <div class="alert-content">
-      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="8" x2="12" y2="12"></line>
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -29,7 +31,8 @@
 
   <div *ngIf="successMessage" class="alert alert-success">
     <div class="alert-content">
-      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
@@ -41,17 +44,15 @@
   <!-- Barra de Filtro y Búsqueda -->
   <div class="card search-card">
     <div class="search-box">
-      <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        placeholder="Buscar por cédula, nombre, apellido o correo..."
-        class="search-input"
-      />
-      <button *ngIf="searchTerm" (click)="searchTerm = ''" class="search-clear" title="Limpiar búsqueda">&times;</button>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por cédula, nombre, apellido o correo..."
+        class="search-input" />
+      <button *ngIf="searchTerm" (click)="searchTerm = ''" class="search-clear"
+        title="Limpiar búsqueda">&times;</button>
     </div>
     <div class="search-stats">
       <span>Total: <strong>{{ clients.length }}</strong> clientes</span>
@@ -98,22 +99,26 @@
             <td class="td-secondary">{{ client.email }}</td>
             <td class="td-secondary">{{ client.birthDate | date:'dd/MM/yyyy' }}</td>
             <td class="td-actions">
-              <a [routerLink]="['/accounts/client', client.id]" class="btn-action accounts-action" title="Ver Cuentas del Cliente">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <a [routerLink]="['/accounts/client', client.id]" class="btn-action accounts-action"
+                title="Ver Cuentas del Cliente">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
                   <line x1="2" y1="10" x2="22" y2="10"></line>
                 </svg>
                 Productos
               </a>
               <a [routerLink]="['/clients/edit', client.id]" class="btn-action edit-action" title="Editar Cliente">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
                 Editar
               </a>
               <button (click)="openDeleteModal(client)" class="btn-action delete-action" title="Eliminar Cliente">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
@@ -148,7 +153,8 @@
   <div *ngIf="clientToDelete" class="modal-backdrop" (click)="closeDeleteModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <svg class="modal-warning-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2">
+        <svg class="modal-warning-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308"
+          stroke-width="2">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -156,8 +162,10 @@
         <h3>Confirmar Eliminación</h3>
       </div>
       <div class="modal-body">
-        <p>¿Está seguro de eliminar al cliente <strong>{{ clientToDelete.firstName }} {{ clientToDelete.lastName }}</strong>?</p>
-        <p class="modal-subtext">Identificación: <strong>{{ clientToDelete.identificationType }} - {{ clientToDelete.identificationNumber }}</strong></p>
+        <p>¿Está seguro de eliminar al cliente <strong>{{ clientToDelete.firstName }} {{ clientToDelete.lastName
+            }}</strong>?</p>
+        <p class="modal-subtext">Identificación: <strong>{{ clientToDelete.identificationType }} - {{
+            clientToDelete.identificationNumber }}</strong></p>
         <div class="warning-box">
           Un cliente no podrá ser eliminado si cuenta con productos financieros asociados.
         </div>

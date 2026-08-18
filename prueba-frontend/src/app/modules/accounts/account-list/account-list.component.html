@@ -131,6 +131,10 @@
               </span>
             </td>
             <td class="td-actions">
+              <a [routerLink]="['/transactions/account', account.id]" class="btn-action statement-action" title="Ver Extracto de la Cuenta">
+                Movimientos
+              </a>
+
               <!-- Botón Inactivar (si está ACTIVE) -->
               <button *ngIf="account.status === 'ACTIVE'" (click)="changeStatus(account, 'INACTIVE')"
                 [disabled]="statusChangingId === account.id" class="btn-action status-inactivate"
