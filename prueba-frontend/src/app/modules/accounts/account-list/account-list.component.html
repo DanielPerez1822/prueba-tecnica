@@ -1,0 +1,218 @@
+<div class="accounts-container">
+  <!-- Header del Módulo -->
+  <div class="module-header">
+    <div class="header-info">
+      <h1 class="module-title">Gestión de Productos Financieros</h1>
+      <p class="module-subtitle">Administración de cuentas corrientes y de ahorros vinculadas a clientes</p>
+    </div>
+    <a routerLink="/accounts/new" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Aperturar Nueva Cuenta
+    </a>
+  </div>
+
+  <!-- Alertas de notificación -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <div class="alert-content">
+      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button (click)="dismissAlert()" class="alert-close">&times;</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <div class="alert-content">
+      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+    <button (click)="dismissAlert()" class="alert-close">&times;</button>
+  </div>
+
+  <!-- Barra de Filtro y Búsqueda -->
+  <div class="card search-card">
+    <div class="filter-controls">
+      <!-- Selector de Cliente -->
+      <div class="client-select-wrapper">
+        <label for="clientFilter" class="select-label">Filtrar por Cliente:</label>
+        <select id="clientFilter" [value]="selectedClientId || ''" (change)="onClientFilterChange($event)"
+          class="select-input">
+          <option value="">-- Todos los Clientes --</option>
+          <option *ngFor="let client of clients" [value]="client.id">
+            {{ client.firstName }} {{ client.lastName }} ({{ client.identificationType }} {{ client.identificationNumber
+            }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Buscador general -->
+      <div class="search-box">
+        <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por número de cuenta, cliente o estado..."
+          class="search-input" />
+        <button *ngIf="searchTerm" (click)="searchTerm = ''" class="search-clear"
+          title="Limpiar búsqueda">&times;</button>
+      </div>
+    </div>
+
+    <div class="search-stats">
+      <span>Total: <strong>{{ accounts.length }}</strong> cuentas</span>
+      <span *ngIf="searchTerm" class="filtered-badge">Filtradas: {{ filteredAccounts.length }}</span>
+    </div>
+  </div>
+
+  <!-- Spinner de Carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando productos financieros...</p>
+  </div>
+
+  <!-- Tabla de Cuentas -->
+  <div *ngIf="!isLoading && filteredAccounts.length > 0" class="card table-card">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Número de Cuenta</th>
+            <th>Tipo de Cuenta</th>
+            <th>Titular / Cliente</th>
+            <th>Saldo Disponible</th>
+            <th>Exención GMF</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let account of filteredAccounts">
+            <td class="td-account-number">
+              <span class="account-num font-mono">{{ account.accountNumber }}</span>
+            </td>
+            <td>
+              <span class="type-badge" [ngClass]="account.accountType.toLowerCase()">
+                {{ account.accountType === 'SAVINGS' ? 'Ahorros' : 'Corriente' }}
+              </span>
+            </td>
+            <td>
+              <div class="client-info">
+                <span class="client-name">{{ getClientName(account.clientId) }}</span>
+                <span class="client-doc">{{ getClientDoc(account.clientId) }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="balance-amount font-mono" [class.zero-balance]="account.balance === 0">
+                ${{ account.balance | number:'1.2-2' }}
+              </span>
+            </td>
+            <td>
+              <span class="gmf-badge" [class.is-exempt]="account.gmfExempt">
+                {{ account.gmfExempt ? 'Exenta (4x1000)' : 'No Exenta' }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="account.status.toLowerCase()">
+                {{ account.status === 'ACTIVE' ? 'Activa' : (account.status === 'INACTIVE' ? 'Inactiva' : 'Cancelada')
+                }}
+              </span>
+            </td>
+            <td class="td-actions">
+              <!-- Botón Inactivar (si está ACTIVE) -->
+              <button *ngIf="account.status === 'ACTIVE'" (click)="changeStatus(account, 'INACTIVE')"
+                [disabled]="statusChangingId === account.id" class="btn-action status-inactivate"
+                title="Inactivar Cuenta">
+                Inactivar
+              </button>
+
+              <!-- Botón Activar (si está INACTIVE) -->
+              <button *ngIf="account.status === 'INACTIVE'" (click)="changeStatus(account, 'ACTIVE')"
+                [disabled]="statusChangingId === account.id" class="btn-action status-activate" title="Activar Cuenta">
+                Activar
+              </button>
+
+              <!-- Botón Cancelar (si no está CANCELLED) -->
+              <button *ngIf="account.status !== 'CANCELLED'" (click)="openCancelModal(account)"
+                [disabled]="statusChangingId === account.id" class="btn-action cancel-action" title="Cancelar Cuenta">
+                Cancelar
+              </button>
+
+              <span *ngIf="account.status === 'CANCELLED'" class="text-cancelled">
+                Sin acciones
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Estado Vacío -->
+  <div *ngIf="!isLoading && filteredAccounts.length === 0" class="empty-state card">
+    <div class="empty-icon-svg">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+        <line x1="2" y1="10" x2="22" y2="10"></line>
+      </svg>
+    </div>
+    <h3>No se encontraron cuentas financieras</h3>
+    <p *ngIf="searchTerm || selectedClientId">No hay productos que coincidan con los filtros aplicados.</p>
+    <p *ngIf="!searchTerm && !selectedClientId">Aún no hay cuentas registradas en el sistema.</p>
+    <a *ngIf="!searchTerm && !selectedClientId" routerLink="/accounts/new" class="btn btn-primary mt-3">
+      Aperturar Primera Cuenta
+    </a>
+  </div>
+
+  <!-- Modal de Confirmación de Cancelación -->
+  <div *ngIf="accountToCancel" class="modal-backdrop" (click)="closeCancelModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <svg class="modal-warning-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308"
+          stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <h3>Confirmar Cancelación de Cuenta</h3>
+      </div>
+      <div class="modal-body">
+        <p>¿Está seguro de cancelar la cuenta número <strong class="font-mono">{{ accountToCancel.accountNumber
+            }}</strong>?</p>
+        <p class="modal-subtext">Titular: <strong>{{ getClientName(accountToCancel.clientId) }}</strong></p>
+        <p class="modal-subtext">Saldo actual: <strong class="font-mono">${{ accountToCancel.balance | number:'1.2-2'
+            }}</strong></p>
+
+        <div *ngIf="accountToCancel.balance > 0" class="error-warning-box">
+          No es posible cancelar esta cuenta porque cuenta con un saldo disponible mayor a $0. El saldo debe ser
+          exactamente $0.00.
+        </div>
+        <div *ngIf="accountToCancel.balance === 0" class="warning-box">
+          La cancelación de una cuenta es una operación irreversible. La cuenta pasará a estado CANCELLED.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeCancelModal()" [disabled]="isCancelling" class="btn btn-secondary">
+          Volver
+        </button>
+        <button (click)="confirmCancel()" [disabled]="isCancelling || accountToCancel.balance > 0"
+          class="btn btn-danger">
+          <span *ngIf="isCancelling" class="mini-spinner"></span>
+          {{ isCancelling ? 'Cancelando...' : 'Confirmar Cancelación' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
