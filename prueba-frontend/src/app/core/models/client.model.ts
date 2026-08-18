@@ -3,7 +3,7 @@ export type IdentificationType = 'CC' | 'CE' | 'PASSPORT';
 export interface Client {
   id?: number;
   identificationType: IdentificationType;
-  identificationNumber: number;
+  identificationNumber: string | number;
   firstName: string;
   lastName: string;
   email: string;
@@ -14,7 +14,7 @@ export interface Client {
 
 export interface CreateClientRequest {
   identificationType: IdentificationType;
-  identificationNumber: number;
+  identificationNumber: string | number;
   firstName: string;
   lastName: string;
   email: string;
@@ -23,9 +23,10 @@ export interface CreateClientRequest {
 
 export interface UpdateClientRequest {
   identificationType: IdentificationType;
-  identificationNumber: number;
+  identificationNumber: string | number;
   firstName: string;
   lastName: string;
   email: string;
   birthDate: string;
 }
+

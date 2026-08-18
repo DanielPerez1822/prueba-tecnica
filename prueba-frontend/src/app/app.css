@@ -34,8 +34,8 @@
   gap: 0.75rem;
 }
 
-.brand-icon {
-  font-size: 1.5rem;
+.brand-icon, .brand-svg {
+  color: #38bdf8;
 }
 
 .brand-title {
