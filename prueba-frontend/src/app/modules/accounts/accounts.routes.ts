@@ -1,5 +1,10 @@
 import { Routes } from '@angular/router';
+import { AccountListComponent } from './account-list/account-list.component';
+import { AccountFormComponent } from './account-form/account-form.component';
 
 export const ACCOUNTS_ROUTES: Routes = [
-  // Rutas base del módulo de productos/cuentas (vistas funcionales a implementar posteriormente)
+  { path: '', component: AccountListComponent },
+  { path: 'client/:clientId', component: AccountListComponent },
+  { path: 'new', component: AccountFormComponent }
 ];
+
