@@ -1,0 +1,144 @@
+<div class="form-container">
+  <!-- Header del Formulario -->
+  <div class="form-header">
+    <div class="header-navigation">
+      <a routerLink="/clients" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al listado
+      </a>
+    </div>
+    <h1 class="form-title">
+      {{ isEditMode ? 'Editar Cliente' : 'Registrar Nuevo Cliente' }}
+    </h1>
+    <p class="form-subtitle">
+      {{ isEditMode ? 'Modifique la información del cliente registrado' : 'Ingrese los datos personales y de
+      identificación para registrar el cliente' }}
+    </p>
+  </div>
+
+  <!-- Estado de Carga (Al obtener datos para edición) -->
+  <div *ngIf="isLoading" class="loading-state card">
+    <div class="spinner"></div>
+    <p>Cargando información del cliente...</p>
+  </div>
+
+  <!-- Alerta de Error -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Formulario -->
+  <div *ngIf="!isLoading" class="card form-card">
+    <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="reactive-form">
+      <div class="form-grid">
+
+        <!-- Tipo de Identificación -->
+        <div class="form-group">
+          <label for="identificationType" class="form-label">
+            Tipo de Documento <span class="required">*</span>
+          </label>
+          <select id="identificationType" formControlName="identificationType" class="form-control"
+            [class.is-invalid]="isFieldInvalid('identificationType')">
+            <option *ngFor="let type of identificationTypes" [value]="type.code">
+              {{ type.label }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('identificationType')" class="error-feedback">
+            <span>El tipo de documento es obligatorio.</span>
+          </div>
+        </div>
+
+        <!-- Número de Identificación -->
+        <div class="form-group">
+          <label for="identificationNumber" class="form-label">
+            Número de Identificación <span class="required">*</span>
+          </label>
+          <input id="identificationNumber" type="text" formControlName="identificationNumber"
+            placeholder="Ej. 1020304050" class="form-control"
+            [class.is-invalid]="isFieldInvalid('identificationNumber')" />
+          <div *ngIf="isFieldInvalid('identificationNumber')" class="error-feedback">
+            <span *ngIf="f['identificationNumber'].errors?.['required']">El número de identificación es
+              obligatorio.</span>
+            <span *ngIf="f['identificationNumber'].errors?.['pattern']">Ingrese únicamente caracteres numéricos.</span>
+          </div>
+        </div>
+
+        <!-- Nombres -->
+        <div class="form-group">
+          <label for="firstName" class="form-label">
+            Nombres <span class="required">*</span>
+          </label>
+          <input id="firstName" type="text" formControlName="firstName" placeholder="Ej. Juan Carlos"
+            class="form-control" [class.is-invalid]="isFieldInvalid('firstName')" />
+          <div *ngIf="isFieldInvalid('firstName')" class="error-feedback">
+            <span *ngIf="f['firstName'].errors?.['required']">El nombre es obligatorio.</span>
+            <span *ngIf="f['firstName'].errors?.['minlength']">El nombre debe tener al menos 2 caracteres.</span>
+          </div>
+        </div>
+
+        <!-- Apellidos -->
+        <div class="form-group">
+          <label for="lastName" class="form-label">
+            Apellidos <span class="required">*</span>
+          </label>
+          <input id="lastName" type="text" formControlName="lastName" placeholder="Ej. Pérez García"
+            class="form-control" [class.is-invalid]="isFieldInvalid('lastName')" />
+          <div *ngIf="isFieldInvalid('lastName')" class="error-feedback">
+            <span *ngIf="f['lastName'].errors?.['required']">El apellido es obligatorio.</span>
+            <span *ngIf="f['lastName'].errors?.['minlength']">El apellido debe tener al menos 2 caracteres.</span>
+          </div>
+        </div>
+
+        <!-- Correo Electrónico -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            Correo Electrónico <span class="required">*</span>
+          </label>
+          <input id="email" type="email" formControlName="email" placeholder="ejemplo@dominio.com" class="form-control"
+            [class.is-invalid]="isFieldInvalid('email')" />
+          <div *ngIf="isFieldInvalid('email')" class="error-feedback">
+            <span *ngIf="f['email'].errors?.['required']">El correo electrónico es obligatorio.</span>
+            <span *ngIf="f['email'].errors?.['email']">Ingrese un correo electrónico válido
+              (ejemplo@dominio.com).</span>
+          </div>
+        </div>
+
+        <!-- Fecha de Nacimiento -->
+        <div class="form-group">
+          <label for="birthDate" class="form-label">
+            Fecha de Nacimiento <span class="required">*</span>
+          </label>
+          <input id="birthDate" type="date" formControlName="birthDate" class="form-control"
+            [class.is-invalid]="isFieldInvalid('birthDate')" />
+          <div *ngIf="isFieldInvalid('birthDate')" class="error-feedback">
+            <span *ngIf="f['birthDate'].errors?.['required']">La fecha de nacimiento es obligatoria.</span>
+            <span *ngIf="f['birthDate'].errors?.['underage']">El cliente debe ser mayor de edad (18 años o más).</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div class="form-actions">
+        <a routerLink="/clients" class="btn btn-secondary">
+          Cancelar
+        </a>
+        <button type="submit" [disabled]="isSubmitting" class="btn btn-primary">
+          <span *ngIf="isSubmitting" class="mini-spinner"></span>
+          {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar Cliente' : 'Guardar Cliente') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
