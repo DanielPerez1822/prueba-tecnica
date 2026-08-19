@@ -1,0 +1,54 @@
+services:
+  # 1. Base de Datos PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: financiera_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: financiera_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123456"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d financiera_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Backend Spring Boot (Java 17)
+  backend:
+    build:
+      context: ./prueba_backend
+      dockerfile: Dockerfile
+    container_name: financiera_backend
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/financiera_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "123456"
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 3. Frontend Angular (Nginx)
+  frontend:
+    build:
+      context: ./prueba-frontend
+      dockerfile: Dockerfile
+    container_name: financiera_frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

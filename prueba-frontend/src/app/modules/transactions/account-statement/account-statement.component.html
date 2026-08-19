@@ -1,0 +1,177 @@
+<div class="statement-container">
+  <!-- Header del Módulo -->
+  <div class="module-header">
+    <div class="header-info">
+      <h1 class="module-title">Extracto y Estado de Cuenta</h1>
+      <p class="module-subtitle">Consulta de saldo en tiempo real y registro histórico de movimientos financieros</p>
+    </div>
+    <a *ngIf="selectedAccountId" [routerLink]="['/transactions/new']" [queryParams]="{ account: selectedAccountId }" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Nueva Transacción
+    </a>
+  </div>
+
+  <!-- Alerta de Error -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <div class="alert-content">
+      <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Seleccionar Cuenta -->
+  <div class="card selector-card">
+    <div class="select-wrapper">
+      <label for="accountSelect" class="select-label">Seleccionar Producto Financiero:</label>
+      <select id="accountSelect" [value]="selectedAccountId || ''" (change)="onAccountSelectChange($event)" class="select-control">
+        <option value="" disabled>-- Seleccione una Cuenta --</option>
+        <option *ngFor="let acc of accounts" [value]="acc.id">
+          Cuenta {{ acc.accountType === 'SAVINGS' ? 'Ahorros' : 'Corriente' }} #{{ acc.accountNumber }} — {{ clientsMap.get(acc.clientId)?.firstName }} {{ clientsMap.get(acc.clientId)?.lastName }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Resumen de la Cuenta Seleccionada -->
+  <div *ngIf="selectedAccount" class="card account-summary-card">
+    <div class="summary-grid">
+      <!-- Info Producto -->
+      <div class="summary-block">
+        <span class="block-label">Número de Cuenta</span>
+        <span class="block-value account-num font-mono">{{ selectedAccount.accountNumber }}</span>
+        <div class="block-sub">
+          <span class="type-badge" [ngClass]="selectedAccount.accountType.toLowerCase()">
+            {{ selectedAccount.accountType === 'SAVINGS' ? 'Cuenta de Ahorros' : 'Cuenta Corriente' }}
+          </span>
+          <span class="status-badge" [ngClass]="selectedAccount.status.toLowerCase()">
+            {{ selectedAccount.status === 'ACTIVE' ? 'Activa' : (selectedAccount.status === 'INACTIVE' ? 'Inactiva' : 'Cancelada') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Titular -->
+      <div class="summary-block">
+        <span class="block-label">Cliente Titular</span>
+        <span class="block-value client-name" *ngIf="selectedClient">{{ selectedClient.firstName }} {{ selectedClient.lastName }}</span>
+        <span class="block-value client-name" *ngIf="!selectedClient">Cliente #{{ selectedAccount.clientId }}</span>
+        <span class="block-sub text-muted" *ngIf="selectedClient">{{ selectedClient.identificationType }}: {{ selectedClient.identificationNumber }}</span>
+        <span class="block-sub text-muted" *ngIf="selectedClient">{{ selectedClient.email }}</span>
+      </div>
+
+      <!-- Saldo Actual -->
+      <div class="summary-block balance-block">
+        <span class="block-label">Saldo Disponible</span>
+        <span class="block-value balance-amount font-mono">${{ selectedAccount.balance | number:'1.2-2' }}</span>
+        <span class="block-sub gmf-info" *ngIf="selectedAccount.gmfExempt">✓ Cuenta Exenta de GMF (4x1000)</span>
+        <span class="block-sub gmf-info text-muted" *ngIf="!selectedAccount.gmfExempt">Sujeta a GMF (4x1000)</span>
+      </div>
+    </div>
+
+    <!-- Indicadores de Movimientos -->
+    <div class="stats-row">
+      <div class="stat-card stat-credit">
+        <span class="stat-title">Total Entradas (Créditos)</span>
+        <span class="stat-amount font-mono">+${{ totalDeposits | number:'1.2-2' }}</span>
+      </div>
+      <div class="stat-card stat-debit">
+        <span class="stat-title">Total Salidas (Débitos)</span>
+        <span class="stat-amount font-mono">-${{ totalWithdrawals | number:'1.2-2' }}</span>
+      </div>
+      <div class="stat-card stat-total">
+        <span class="stat-title">Total Movimientos</span>
+        <span class="stat-amount">{{ transactions.length }} operaciones</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador en Transacciones -->
+  <div *ngIf="selectedAccount && transactions.length > 0" class="card search-card">
+    <div class="search-box">
+      <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Filtrar por descripción, monto o tipo de operación..."
+        class="search-input"
+      />
+      <button *ngIf="searchTerm" (click)="searchTerm = ''" class="search-clear" title="Limpiar búsqueda">&times;</button>
+    </div>
+    <div class="search-stats" *ngIf="searchTerm">
+      <span>Resultados: {{ filteredTransactions.length }}</span>
+    </div>
+  </div>
+
+  <!-- Spinner de Carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando extracto de transacciones...</p>
+  </div>
+
+  <!-- Tabla de Movimientos -->
+  <div *ngIf="!isLoading && selectedAccount && filteredTransactions.length > 0" class="card table-card">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha / Hora</th>
+            <th>Tipo de Operación</th>
+            <th>Detalle / Descripción</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of filteredTransactions">
+            <td class="td-date font-mono">
+              {{ tx.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}
+            </td>
+            <td>
+              <span class="movement-badge" [class.badge-credit]="isCredit(tx)" [class.badge-debit]="!isCredit(tx)">
+                {{ isCredit(tx) ? 'ENTRADA' : 'SALIDA' }}
+              </span>
+            </td>
+            <td>
+              <div class="tx-description-box">
+                <span class="tx-label font-bold">{{ getMovementLabel(tx) }}</span>
+                <span class="tx-desc text-muted" *ngIf="tx.description">{{ tx.description }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="tx-amount font-mono" [class.amount-credit]="isCredit(tx)" [class.amount-debit]="!isCredit(tx)">
+                {{ isCredit(tx) ? '+' : '-' }}${{ tx.amount | number:'1.2-2' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Estado Vacío del Extracto -->
+  <div *ngIf="!isLoading && selectedAccount && filteredTransactions.length === 0" class="empty-state card">
+    <div class="empty-icon-svg">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+    </div>
+    <h3>Sin movimientos financieros registrados</h3>
+    <p *ngIf="searchTerm">No hay transacciones que coincidan con la búsqueda "{{ searchTerm }}".</p>
+    <p *ngIf="!searchTerm">Esta cuenta no registra consignaciones, retiros o transferencias hasta el momento.</p>
+    <a *ngIf="!searchTerm && selectedAccountId" [routerLink]="['/transactions/new']" [queryParams]="{ account: selectedAccountId }" class="btn btn-primary mt-3">
+      Realizar Primera Transacción
+    </a>
+  </div>
+</div>

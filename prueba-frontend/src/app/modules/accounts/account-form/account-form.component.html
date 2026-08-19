@@ -1,0 +1,122 @@
+<div class="form-container">
+  <!-- Header del Formulario -->
+  <div class="form-header">
+    <div class="header-navigation">
+      <a routerLink="/accounts" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al listado de cuentas
+      </a>
+    </div>
+    <h1 class="form-title">Aperturar Nueva Cuenta Financiera</h1>
+    <p class="form-subtitle">Vincule un producto financiero a un cliente registrado en la entidad</p>
+  </div>
+
+  <!-- Alerta de Error -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <svg class="alert-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Panel Informativo -->
+  <div class="info-card">
+    <div class="info-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <strong>Generación Automática del Número de Cuenta</strong>
+    </div>
+    <p>
+      Al guardar, el sistema asignará automáticamente un número de cuenta único de 10 dígitos:
+      comenzando con <strong>53</strong> para Cuentas de Ahorros o <strong>33</strong> para Cuentas Corrientes.
+      El estado inicial de la cuenta será <strong>Activa (ACTIVE)</strong> con saldo inicial de <strong>$0.00</strong>.
+    </p>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card form-card">
+    <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" class="reactive-form">
+      <div class="form-grid">
+        
+        <!-- Cliente Titular -->
+        <div class="form-group full-width">
+          <label for="clientId" class="form-label">
+            Cliente Titular <span class="required">*</span>
+          </label>
+          <select
+            id="clientId"
+            formControlName="clientId"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('clientId')"
+            [disabled]="isLoadingClients"
+          >
+            <option value="">-- Seleccione un Cliente Titular --</option>
+            <option *ngFor="let client of clients" [value]="client.id">
+              {{ client.firstName }} {{ client.lastName }} — {{ client.identificationType }}: {{ client.identificationNumber }} ({{ client.email }})
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('clientId')" class="error-feedback">
+            <span>Debe seleccionar un cliente titular para aperturar la cuenta.</span>
+          </div>
+          <span *ngIf="isLoadingClients" class="help-text">Cargando lista de clientes registrados...</span>
+        </div>
+
+        <!-- Tipo de Cuenta -->
+        <div class="form-group">
+          <label for="accountType" class="form-label">
+            Tipo de Producto Financiero <span class="required">*</span>
+          </label>
+          <select
+            id="accountType"
+            formControlName="accountType"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('accountType')"
+          >
+            <option *ngFor="let type of accountTypes" [value]="type.code">
+              {{ type.label }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('accountType')" class="error-feedback">
+            <span>El tipo de producto es obligatorio.</span>
+          </div>
+        </div>
+
+        <!-- Exención GMF (4x1000) -->
+        <div class="form-group checkbox-group">
+          <label class="form-label">Exención de Impuestos</label>
+          <label for="gmfExempt" class="checkbox-label">
+            <input
+              id="gmfExempt"
+              type="checkbox"
+              formControlName="gmfExempt"
+              class="form-checkbox"
+            />
+            <span>Cuenta Exenta de GMF (4x1000)</span>
+          </label>
+          <span class="help-text">Indica si esta cuenta estará libre del Gravamen a los Movimientos Financieros.</span>
+        </div>
+
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div class="form-actions">
+        <a routerLink="/accounts" class="btn btn-secondary">
+          Cancelar
+        </a>
+        <button type="submit" [disabled]="isSubmitting" class="btn btn-primary">
+          <span *ngIf="isSubmitting" class="mini-spinner"></span>
+          {{ isSubmitting ? 'Aperturando Cuenta...' : 'Aperturar Cuenta' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
