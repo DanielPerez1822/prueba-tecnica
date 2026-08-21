@@ -7,9 +7,9 @@ import { Transaction, CreateTransactionRequest } from '../models/transaction.mod
   providedIn: 'root'
 })
 export class TransactionService {
-  private readonly apiUrl = 'http://localhost:9000/api/v1/transactions';
-
-  constructor(private http: HttpClient) {}
+  private readonly apiUrl = '/api/v1/transactions';
+  // http://localhost:9000
+  constructor(private http: HttpClient) { }
 
   createTransaction(request: CreateTransactionRequest): Observable<Transaction> {
     return this.http.post<Transaction>(this.apiUrl, request);

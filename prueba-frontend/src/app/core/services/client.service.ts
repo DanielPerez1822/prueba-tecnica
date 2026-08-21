@@ -7,9 +7,9 @@ import { Client, CreateClientRequest, UpdateClientRequest } from '../models/clie
   providedIn: 'root'
 })
 export class ClientService {
-  private readonly apiUrl = 'http://localhost:9000/api/v1/clients';
-
-  constructor(private http: HttpClient) {}
+  private readonly apiUrl = '/api/v1/clients';
+  // http://localhost:9000
+  constructor(private http: HttpClient) { }
 
   getAllClients(): Observable<Client[]> {
     return this.http.get<Client[]>(this.apiUrl);

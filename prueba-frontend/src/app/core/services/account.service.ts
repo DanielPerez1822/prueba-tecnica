@@ -7,9 +7,9 @@ import { Account, AccountStatus, CreateAccountRequest } from '../models/account.
   providedIn: 'root'
 })
 export class AccountService {
-  private readonly apiUrl = 'http://localhost:9000/api/v1/accounts';
-
-  constructor(private http: HttpClient) {}
+  private readonly apiUrl = '/api/v1/accounts';
+  // http://localhost:9000
+  constructor(private http: HttpClient) { }
 
   getAllAccounts(): Observable<Account[]> {
     return this.http.get<Account[]>(this.apiUrl);
